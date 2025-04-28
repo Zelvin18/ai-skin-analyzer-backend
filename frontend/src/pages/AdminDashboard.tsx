@@ -77,6 +77,29 @@ interface Product {
   when_to_apply: string;
 }
 
+interface User {
+  id: number;
+  first_name: string;
+  last_name: string;
+  email: string;
+  age: number | null;
+  last_skin_condition: string;
+  is_active: boolean;
+}
+
+interface FormData {
+  name: string;
+  brand: string;
+  category: string;
+  description: string;
+  price: string;
+  image: string;
+  stock: string;
+  suitable_for: string;
+  targets: string;
+  when_to_apply: string;
+}
+
 const AdminDashboard = () => {
   const navigate = useNavigate();
   const isDesktop = useBreakpointValue({ base: false, lg: true });
@@ -87,7 +110,7 @@ const AdminDashboard = () => {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<FormData>({
     name: '',
     brand: 'Aurora Beauty',
     category: '',
@@ -100,7 +123,7 @@ const AdminDashboard = () => {
     when_to_apply: ''
   });
   
-  const [users, setUsers] = useState<any[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
   const [isLoadingUsers, setIsLoadingUsers] = useState(true);
   
   const cardBg = useColorModeValue('white', 'gray.800');
@@ -116,7 +139,7 @@ const AdminDashboard = () => {
     setIsLoading(true);
     try {
       console.log('Fetching products from server...');
-      const response = await axios.get('http://localhost:8000/api/products/', {
+      const response = await axios.get<Product[]>('http://localhost:8000/api/products/', {
         headers: {
           'Accept': 'application/json',
           'Content-Type': 'application/json'
@@ -177,7 +200,7 @@ const AdminDashboard = () => {
   const fetchUsers = async () => {
     setIsLoadingUsers(true);
     try {
-      const response = await axios.get('http://localhost:8000/api/users/', {
+      const response = await axios.get<User[]>('http://localhost:8000/api/users/', {
         headers: {
           'Accept': 'application/json',
           'Content-Type': 'application/json'

@@ -2,9 +2,15 @@ import { useState } from 'react';
 import { Box, Button, Text, VStack, useToast } from '@chakra-ui/react';
 import { testAIModel } from '../services/api';
 
+interface TestResult {
+  success: boolean;
+  message: string;
+  data?: any;
+}
+
 const AIModelTest = () => {
   const [isLoading, setIsLoading] = useState(false);
-  const [result, setResult] = useState<any>(null);
+  const [result, setResult] = useState<TestResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const toast = useToast();
 
@@ -24,7 +30,8 @@ const AIModelTest = () => {
         isClosable: true,
       });
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Unknown error occurred');
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
+      setError(errorMessage);
       toast({
         title: 'Test Failed',
         description: 'Could not connect to AI model endpoint',
