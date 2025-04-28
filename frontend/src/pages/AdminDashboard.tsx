@@ -88,12 +88,13 @@ interface User {
 }
 
 interface FormData {
+  id?: number;
   name: string;
   brand: string;
   category: string;
   description: string;
   price: string;
-  image: string;
+  image: string | File;
   stock: string;
   suitable_for: string;
   targets: string;
@@ -237,48 +238,52 @@ const AdminDashboard = () => {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
   
-  const updateProduct = async (productData: any) => {
-    try {
-      console.log('Updating product:', productData);
-      
-      // Ensure ID is a string
-      const productId = String(productData.id);
-      delete productData.id; // Remove id from the payload
-      
-      const response = await productAPI.updateProduct(productId, productData);
-      console.log('Product updated successfully:', response.data);
-      return response.data;
-    } catch (error: any) {
-      console.error('Error updating product:', error);
-      if (error.response?.status === 401) {
-        // Token expired or invalid
+  const handleError = (error: unknown) => {
+    console.error('Error:', error);
+    const errorMessage = error instanceof Error ? error.message : 
+      error && typeof error === 'object' && 'message' in error ? String(error.message) : 
+      'An unexpected error occurred';
+    
+    toast({
+      title: "Error",
+      description: errorMessage,
+      status: "error",
+      duration: 5000,
+      isClosable: true,
+    });
+
+    if (error && typeof error === 'object' && 'response' in error) {
+      const response = (error as any).response;
+      if (response?.status === 401) {
         localStorage.removeItem('access_token');
         localStorage.removeItem('refresh_token');
         navigate('/admin/login');
-        throw new Error('Session expired. Please login again.');
-      } else if (error.response?.status === 403) {
-        throw new Error('You do not have permission to update products.');
-      } else {
-        throw new Error(error.response?.data?.error || 'Failed to update product');
       }
     }
   };
   
-  const updateProductImageInBackend = async (productId: string, imageFile: File) => {
+  const updateProduct = async (productId: number, productData: Partial<Product>) => {
     try {
-      console.log('Updating product image in backend for product ID:', productId);
-      const response = await productAPI.updateProductImage(productId, imageFile);
-      console.log('Product image updated successfully:', response.data);
+      const response = await productAPI.updateProduct(productId, productData);
       return response.data;
     } catch (error) {
-      console.error('Error updating product image:', error);
+      handleError(error);
+      throw error;
+    }
+  };
+  
+  const updateProductImageInBackend = async (productId: number, imageFile: File) => {
+    try {
+      const response = await productAPI.updateProductImage(productId, imageFile);
+      return response.data;
+    } catch (error) {
+      handleError(error);
       throw error;
     }
   };
   
   const handleImageChange = async (file: File) => {
     try {
-      // Check file size (limit to 5MB)
       if (file.size > 5 * 1024 * 1024) {
         toast({
           title: "Image too large",
@@ -290,7 +295,6 @@ const AdminDashboard = () => {
         return;
       }
       
-      // If we're editing an existing product, update the image immediately
       if (selectedProduct?.id) {
         try {
           await updateProductImageInBackend(selectedProduct.id, file);
@@ -301,28 +305,13 @@ const AdminDashboard = () => {
             isClosable: true,
           });
         } catch (error) {
-          console.error('Error updating product image:', error);
-          toast({
-            title: "Failed to update product image",
-            description: error instanceof Error ? error.message : "Please try again",
-            status: "error",
-            duration: 3000,
-            isClosable: true,
-          });
+          handleError(error);
         }
       }
       
-      // Update the form data with the new image
-      setFormData(prev => ({ ...prev, image: URL.createObjectURL(file) }));
+      setFormData(prev => ({ ...prev, image: file }));
     } catch (error) {
-      console.error('Error handling image change:', error);
-      toast({
-        title: "Error handling image",
-        description: error instanceof Error ? error.message : "Please try again",
-        status: "error",
-        duration: 3000,
-        isClosable: true,
-      });
+      handleError(error);
     }
   };
   
@@ -401,7 +390,6 @@ const AdminDashboard = () => {
     setIsSubmitting(true);
     
     try {
-      // Validate form data
       if (!formData.name || !formData.brand || !formData.category || !formData.description || !formData.price || !formData.stock) {
         toast({
           title: "Missing required fields",
@@ -414,24 +402,24 @@ const AdminDashboard = () => {
         return;
       }
       
-      // Convert price and stock to numbers
-      const productData = {
-        ...formData,
+      const productData: Partial<Product> = {
+        name: formData.name,
+        brand: formData.brand,
+        category: formData.category,
+        description: formData.description,
         price: parseFloat(formData.price),
         stock: parseInt(formData.stock),
+        suitable_for: formData.suitable_for,
+        targets: formData.targets,
+        when_to_apply: formData.when_to_apply,
       };
       
-      let updatedProduct;
-      
       if (selectedProduct) {
-        // Update existing product
-        productData.id = selectedProduct.id;
-        updatedProduct = await updateProduct(productData);
+        const updatedProduct = await updateProduct(Number(selectedProduct.id), productData);
         
-        // Update image if it has changed and is a File object
-        if (formData.image && formData.image instanceof File) {
+        if (formData.image instanceof File) {
           try {
-            await updateProductImageInBackend(updatedProduct.id, formData.image);
+            await updateProductImageInBackend(Number(selectedProduct.id), formData.image);
             toast({
               title: "Product updated successfully",
               status: "success",
@@ -439,14 +427,7 @@ const AdminDashboard = () => {
               isClosable: true,
             });
           } catch (error) {
-            console.error('Error updating product image:', error);
-            toast({
-              title: "Product saved but image update failed",
-              description: error instanceof Error ? error.message : "Please try updating the image again",
-              status: "warning",
-              duration: 5000,
-              isClosable: true,
-            });
+            handleError(error);
           }
         } else {
           toast({
@@ -457,13 +438,11 @@ const AdminDashboard = () => {
           });
         }
       } else {
-        // Add new product
-        updatedProduct = await addProduct(productData);
+        const newProduct = await addProduct(productData);
         
-        // Update image for new product if it's a File object
-        if (formData.image && formData.image instanceof File) {
+        if (formData.image instanceof File) {
           try {
-            await updateProductImageInBackend(updatedProduct.id, formData.image);
+            await updateProductImageInBackend(Number(newProduct.id), formData.image);
             toast({
               title: "Product added successfully",
               status: "success",
@@ -471,14 +450,7 @@ const AdminDashboard = () => {
               isClosable: true,
             });
           } catch (error) {
-            console.error('Error updating product image:', error);
-            toast({
-              title: "Product saved but image update failed",
-              description: error instanceof Error ? error.message : "Please try updating the image again",
-              status: "warning",
-              duration: 5000,
-              isClosable: true,
-            });
+            handleError(error);
           }
         } else {
           toast({
@@ -490,21 +462,11 @@ const AdminDashboard = () => {
         }
       }
       
-      // Refresh products list
       fetchProducts();
-      
-      // Close modal and reset form
       onClose();
       resetForm();
     } catch (error) {
-      console.error('Error saving product:', error);
-      toast({
-        title: "Error saving product",
-        description: error instanceof Error ? error.message : "An unexpected error occurred",
-        status: "error",
-        duration: 5000,
-        isClosable: true,
-      });
+      handleError(error);
     } finally {
       setIsSubmitting(false);
     }
@@ -675,7 +637,7 @@ const AdminDashboard = () => {
                               _hover={{ boxShadow: 'md', transform: 'translateY(-2px)' }}
                             >
                               <Box position="relative" height="250px" overflow="hidden" display="flex" justifyContent="center" alignItems="center" bg="gray.50">
-                                {product.image ? (
+                                {typeof product.image === 'string' ? (
                                   <ProductImage
                                     imageUrl={product.image}
                                     size="md"
@@ -946,7 +908,7 @@ const AdminDashboard = () => {
               <FormControl>
                 <FormLabel>Product Image</FormLabel>
                 <ProductImage
-                  imageUrl={formData.image}
+                  imageUrl={typeof formData.image === 'string' ? formData.image : ''}
                   onImageChange={handleImageChange}
                   isEditable={true}
                   size="lg"
