@@ -63,8 +63,19 @@ import './AdminDashboard.css';
 import ProductImage from '../components/ProductImage';
 import { productAPI } from '../services/api';
 
-// Initial empty products array (will be populated from API)
-const initialProducts: any[] = [];
+interface Product {
+  id: number;
+  price: number;
+  stock: number;
+  name: string;
+  brand: string;
+  category: string;
+  description: string;
+  image: string;
+  suitable_for: string;
+  targets: string;
+  when_to_apply: string;
+}
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
@@ -72,8 +83,8 @@ const AdminDashboard = () => {
   const toast = useToast();
   const { isOpen, onOpen, onClose } = useDisclosure();
   
-  const [products, setProducts] = useState(initialProducts);
-  const [selectedProduct, setSelectedProduct] = useState<any>(null);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({

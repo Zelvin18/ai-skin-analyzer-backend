@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { 
   Box, 
@@ -23,14 +23,29 @@ import {
   useColorModeValue,
   Alert,
   AlertIcon,
+  useToast,
 } from '@chakra-ui/react';
 import { FaShoppingCart, FaArrowLeft, FaCheckCircle, FaExclamationTriangle, FaUserMd } from 'react-icons/fa';
 import './Results.css';
+
+interface Product {
+  id: number;
+  name: string;
+  brand: string;
+  category: string;
+  description: string;
+  price: number;
+  image: string;
+  suitable_for: string;
+  targets: string;
+  when_to_apply: string;
+}
 
 const Results = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const isDesktop = useBreakpointValue({ base: false, lg: true });
+  const toast = useToast();
   
   // Get data from navigation state
   const { result, image } = location.state || { result: null, image: null };
@@ -64,6 +79,10 @@ const Results = () => {
   
   // Get recommended products from the AI model
   const recommendedProducts = result.products || [];
+  
+  const handleProductClick = (product: Product) => {
+    // ... rest of the code ...
+  };
   
   return (
     <Box className="app-container">

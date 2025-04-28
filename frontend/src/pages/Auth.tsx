@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Box,
@@ -11,7 +11,6 @@ import {
   Input,
   Button,
   HStack,
-  Divider,
   useToast,
   InputGroup,
   InputRightElement,
@@ -20,32 +19,18 @@ import {
   Checkbox,
   SimpleGrid,
   useColorModeValue,
-  ScaleFade,
-  Flex,
-  Image,
-  Stack,
-  Tooltip,
 } from '@chakra-ui/react';
-import { ViewIcon, ViewOffIcon, InfoIcon } from '@chakra-ui/icons';
+import { ViewIcon, ViewOffIcon } from '@chakra-ui/icons';
 import { motion } from 'framer-motion';
-import bgImage from '../new.png';  // Make sure this path matches your image location
 
 const MotionBox = motion(Box);
 
 interface SkinType {
-  dry: boolean;
-  oily: boolean;
-  combination: boolean;
-  normal: boolean;
-  sensitive: boolean;
+  [key: string]: boolean;
 }
 
 interface SkinConcerns {
-  acne: boolean;
-  aging: boolean;
-  pigmentation: boolean;
-  redness: boolean;
-  dullness: boolean;
+  [key: string]: boolean;
 }
 
 interface FormData {

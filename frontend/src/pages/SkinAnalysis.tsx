@@ -32,8 +32,10 @@ import {
   ListIcon,
   Divider,
   useColorModeValue,
+  SimpleGrid,
+  Badge,
 } from '@chakra-ui/react';
-import { FaCamera, FaUpload, FaCheck, FaLightbulb, FaExclamationTriangle } from 'react-icons/fa';
+import { FaCamera, FaUpload, FaCheck, FaLightbulb, FaExclamationTriangle, FaShoppingCart, FaArrowLeft } from 'react-icons/fa';
 import axios from 'axios';
 import './SkinAnalysis.css';
 
