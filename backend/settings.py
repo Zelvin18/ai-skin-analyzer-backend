@@ -193,3 +193,9 @@ SIMPLE_JWT = {
 SECURE_SSL_REDIRECT = False
 SESSION_COOKIE_SECURE = False
 CSRF_COOKIE_SECURE = False
+
+# Health check settings
+HEALTH_CHECK = {
+    'DISK_USAGE_MAX': 90,  # percent
+    'MEMORY_MIN': 100,    # MB
+}

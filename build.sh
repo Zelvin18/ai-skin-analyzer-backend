@@ -34,4 +34,4 @@ python manage.py collectstatic --no-input
 
 # Start Gunicorn
 echo "Starting Gunicorn..."
-exec gunicorn backend.wsgi:application --bind 0.0.0.0:$PORT --workers 2 --threads 2 --timeout 120 --access-logfile - --error-logfile - --log-level debug 
+exec gunicorn backend.wsgi:application --bind 0.0.0.0:$PORT --workers 1 --threads 4 --timeout 120 --access-logfile - --error-logfile - --log-level debug --worker-class=sync --forwarded-allow-ips="*" --proxy-allow-from="*" 
