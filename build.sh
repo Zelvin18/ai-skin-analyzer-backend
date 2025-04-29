@@ -5,9 +5,18 @@ set -o errexit
 # Install Python dependencies
 pip install -r requirements.txt
 
-# Run migrations
-python manage.py makemigrations
-python manage.py migrate
+# Run migrations with retry logic
+for i in {1..5}; do
+    echo "Attempt $i to run migrations..."
+    python manage.py makemigrations
+    if python manage.py migrate; then
+        echo "Migrations completed successfully"
+        break
+    else
+        echo "Migration attempt $i failed, waiting 10 seconds before retry..."
+        sleep 10
+    fi
+done
 
 # Create superuser if it doesn't exist
 python manage.py shell << END
