@@ -13,16 +13,18 @@ python manage.py migrate
 python manage.py shell << END
 from django.contrib.auth import get_user_model
 from django.db import IntegrityError
+import uuid
 
 User = get_user_model()
 try:
     if not User.objects.filter(username='admin').exists():
+        unique_email = f'admin_{uuid.uuid4().hex[:8]}@skinscan.com'
         User.objects.create_superuser(
             username='admin',
-            email='admin@skinscan.com',
+            email=unique_email,
             password='admin'
         )
-        print("Superuser created successfully")
+        print(f"Superuser created successfully with email: {unique_email}")
     else:
         print("Superuser already exists")
 except IntegrityError as e:
