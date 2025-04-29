@@ -2,11 +2,15 @@
 # exit on error
 set -o errexit
 
+echo "Starting build process..."
+
 # Install Python dependencies
+echo "Installing Python dependencies..."
 pip install -r requirements.txt
 
 # Set default port if not provided
 export PORT=${PORT:-10000}
+echo "Using port: $PORT"
 
 # Run migrations with retry logic
 for i in {1..5}; do
@@ -22,6 +26,7 @@ for i in {1..5}; do
 done
 
 # Create superuser if it doesn't exist
+echo "Checking for superuser..."
 python manage.py shell << END
 from django.contrib.auth import get_user_model
 from django.db import IntegrityError
@@ -45,8 +50,9 @@ except IntegrityError as e:
 END
 
 # Collect static files
+echo "Collecting static files..."
 python manage.py collectstatic --no-input
 
 # Start Gunicorn with the correct port and workers
 echo "Starting Gunicorn on port $PORT"
-gunicorn backend.wsgi:application --bind 0.0.0.0:$PORT --workers 2 --threads 2 --timeout 120 --access-logfile - --error-logfile - 
+exec gunicorn backend.wsgi:application --bind 0.0.0.0:$PORT --workers 2 --threads 2 --timeout 120 --access-logfile - --error-logfile - --log-level debug 
