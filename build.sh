@@ -5,6 +5,9 @@ set -o errexit
 # Install Python dependencies
 pip install -r requirements.txt
 
+# Set default port if not provided
+export PORT=${PORT:-10000}
+
 # Run migrations with retry logic
 for i in {1..5}; do
     echo "Attempt $i to run migrations..."
@@ -45,4 +48,5 @@ END
 python manage.py collectstatic --no-input
 
 # Start Gunicorn with the correct port and workers
-gunicorn backend.wsgi:application --bind 0.0.0.0:$PORT --workers 2 --threads 2 --timeout 120 
+echo "Starting Gunicorn on port $PORT"
+gunicorn backend.wsgi:application --bind 0.0.0.0:$PORT --workers 2 --threads 2 --timeout 120 --access-logfile - --error-logfile - 
