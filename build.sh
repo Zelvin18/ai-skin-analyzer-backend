@@ -35,5 +35,5 @@ END
 # Collect static files
 python manage.py collectstatic --no-input
 
-# Start Gunicorn
-gunicorn backend.wsgi:application 
+# Start Gunicorn with the correct port
+gunicorn backend.wsgi:application --bind 0.0.0.0:$PORT 
