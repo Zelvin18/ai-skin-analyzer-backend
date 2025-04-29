@@ -55,4 +55,4 @@ python manage.py collectstatic --no-input
 
 # Start Gunicorn with the correct port and workers
 echo "Starting Gunicorn on port $PORT"
-exec gunicorn backend.wsgi:application --bind 0.0.0.0:$PORT --workers 2 --threads 2 --timeout 120 --access-logfile - --error-logfile - --log-level debug --forwarded-allow-ips="*" --proxy-allow-from="*" 
+exec gunicorn backend.wsgi:application --bind 0.0.0.0:$PORT --workers 2 --threads 2 --timeout 120 --access-logfile - --error-logfile - --log-level debug --forwarded-allow-ips="*" --proxy-allow-from="*" --worker-class=gthread 
