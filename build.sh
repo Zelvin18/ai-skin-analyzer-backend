@@ -16,7 +16,7 @@ from django.db import IntegrityError
 
 User = get_user_model()
 try:
-    if not User.objects.filter(username='admin').exists() and not User.objects.filter(email='admin@skinscan.com').exists():
+    if not User.objects.filter(username='admin').exists():
         User.objects.create_superuser(
             username='admin',
             email='admin@skinscan.com',
@@ -31,4 +31,7 @@ except IntegrityError as e:
 END
 
 # Collect static files
-python manage.py collectstatic --no-input 
+python manage.py collectstatic --no-input
+
+# Start Gunicorn
+gunicorn backend.wsgi:application 
