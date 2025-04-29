@@ -18,14 +18,16 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
-from django.shortcuts import redirect
 from django.http import HttpResponse
+
+def root_view(request):
+    return HttpResponse("Backend is running!")
 
 def health_check(request):
     return HttpResponse("OK")
 
 urlpatterns = [
-    path('', lambda request: redirect('admin:index'), name='root'),
+    path('', root_view, name='root'),
     path('admin/', admin.site.urls),
     path('api/', include('skin_analyzer.urls')),
     path('health/', health_check, name='health_check'),
